@@ -1,0 +1,7 @@
+project_id                  = "<your-project-id>"             # GCP project ID, found in GCP console under Project Info
+region                      = "<your-region>"                 # GCP region for deployment
+credentials_file            = "<path-to-credentials-file>"    # Path to the GCP service account key JSON file
+environment_name            = "<your-environment-name>"       # Name for your environment, used in resource naming
+location                    = "<your-location>"               # Location identifier, used in resource naming
+shared_secret_azure         = "<your-shared-secret>"          # Shared secret for the IPSEC connection to Azure
+my_public_ip                = "<your-public-ip>"              # Your public IP for RDP access
