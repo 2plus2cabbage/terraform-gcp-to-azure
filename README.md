@@ -35,6 +35,13 @@ The project is split into multiple files to illustrate modularity and keep separ
 - Terraform installed on your machine.
 - Examples are demonstrated using Visual Studio Code (VSCode).
 
+## Procedural Note
+Either the Azure or GCP project can be deployed first to obtain the first VPN IP; this example starts with Azure. The deployment must follow a specific order due to dependencies on VPN Gateway IPs:
+- First, deploy the Azure project to obtain the `azure_vpn_ip` output in step 4.
+- Then, in this GCP project, update `azure-networking.tf` with the `azure_vpn_ip`, deploy this project, and note the `gcp_vpn_ip` output in step 5.
+- Finally, update `gcp-networking.tf` in the Azure project with the `gcp_vpn_ip`, and redeploy the Azure project in step 6 to complete the tunnel setup.
+Ensure the shared secret (`shared_secret_gcp` in Azure, `shared_secret_azure` in GCP) matches in both projects' `terraform.tfvars`.
+
 ## Deployment Steps
 1. Deploy the corresponding Azure project with IPSEC support to obtain the `azure_vpn_ip` output.
 2. Update `terraform.tfvars` with GCP credentials, your public IP in `my_public_ip`, and the shared secret in `shared_secret_azure`.
