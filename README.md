@@ -34,26 +34,25 @@ The project is split into multiple files to illustrate modularity and keep separ
 - A corresponding Azure project with IPSEC support, providing the `azure_vpn_ip` output.
 - Terraform installed on your machine.
 - Examples are demonstrated using Visual Studio Code (VSCode).
+- **Note**: Cloud providers regularly change their console interfaces without notice. Steps outlined today may not apply exactly tomorrow.
 
 ## Procedural Note
 Either the Azure or GCP project can be deployed first to obtain the first VPN IP; this example starts with Azure. The deployment must follow a specific order due to dependencies on VPN Gateway IPs:
-- First, deploy the Azure project to obtain the `azure_vpn_ip` output in step 4.
-- Then, in this GCP project, update `azure-networking.tf` with the `azure_vpn_ip`, deploy this project, and note the `gcp_vpn_ip` output in step 5.
-- Finally, update `gcp-networking.tf` in the Azure project with the `gcp_vpn_ip`, and redeploy the Azure project in step 6 to complete the tunnel setup.
+- First, deploy the Azure project to obtain the `azure_vpn_ip` output in step 3.
+- Then, in this GCP project, update `terraform.tfvars` with the `azure_vpn_ip`, deploy this project, and note the `gcp_vpn_ip` output in step 4.
+- Finally, update `terraform.tfvars` in the Azure project with the `gcp_vpn_ip`, and redeploy the Azure project in step 5 to complete the tunnel setup.
 Ensure the shared secret (`shared_secret_gcp` in Azure, `shared_secret_azure` in GCP) matches in both projects' `terraform.tfvars`.
 
 ## Deployment Steps
-1. Deploy the corresponding Azure project with IPSEC support to obtain the `azure_vpn_ip` output.
-2. Update `terraform.tfvars` with GCP credentials, your public IP in `my_public_ip`, and the shared secret in `shared_secret_azure`.
-3. Update `azure-networking.tf` with the actual `azure_vpn_ip` from the Azure project output.
-4. Run `terraform init`, then (optionally) `terraform plan` to preview changes, then `terraform apply` (type `yes`).
-5. Get the public IP from the `gcp_vm_public_ip` output on the screen, or run `terraform output gcp_vm_public_ip`, or check in the GCP Console under **Compute Engine > VM Instances**.
-6. In the Azure project, update `gcp-networking.tf` with the GCP VPN Gateway IP (`gcp_vpn_ip` output) and run `terraform apply`.
-7. Verify the tunnel in the GCP Console under **VPN > [vpn-tunnel-name]** (should show "Established").
-8. In the GCP Console, go to **Compute Engine > VM Instances > [click running instance]**, click **Set Windows Password**, enter a username (e.g., `Administrator` or a new user), click **Set**, and note the generated password.
-9. Use Remote Desktop to log in with the username and the generated password.
-10. From the GCP VM, ping the Azure VM’s private IP (`azure_vm_private_ip` output) to confirm connectivity.
-11. To remove all resources, run `terraform destroy` (type `yes`).
+1. Update `terraform.tfvars` with GCP credentials, your public IP in `my_public_ip`, the shared secret in `shared_secret_azure`, and the Azure VPN IP in `azure_vpn_ip` (obtained from the Azure project’s `azure_vpn_ip` output).
+2. Run `terraform init`, then (optionally) `terraform plan` to preview changes, then `terraform apply` (type `yes`).
+3. Get the public IP from the `gcp_vm_public_ip` output on the screen, or run `terraform output gcp_vm_public_ip`, or check in the GCP Console under **Compute Engine > VM Instances**. Note the `gcp_vpn_ip` output for use in the Azure project.
+4. In the Azure project, update `terraform.tfvars` with the GCP VPN Gateway IP (`gcp_vpn_ip` output) in `gcp_vpn_ip`, ensure `shared_secret_gcp` matches the shared secret from GCP, and run `terraform apply`.
+5. Verify the tunnel in the GCP Console under **VPC Network > Cloud VPN** (should show "Established").
+6. In the GCP Console, go to **Compute Engine > VM Instances > [click running instance]**, click **Set Windows Password**, enter a username (e.g., `adminuser`), click **Set**, and note the generated password.
+7. Use Remote Desktop to log in to the GCP VM with the username and the generated password, using the public IP from the `gcp_vm_public_ip` output.
+8. From the GCP VM, ping the Azure VM’s private IP (`azure_vm_private_ip` output) to confirm connectivity; then from the Azure VM, ping the GCP VM’s private IP (`gcp_vm_private_ip` output) to confirm bidirectional connectivity. If the ping from GCP to Azure fails, verify the Windows Firewall is disabled on the GCP VM by running `netsh advfirewall show allprofiles` in PowerShell (it should show `State: OFF`). If enabled, disable it with `netsh advfirewall set allprofiles state off` and check for system policies re-enabling it.
+9. To remove all resources, run `terraform destroy` (type `yes`).
 
 ## Potential costs and licensing
 - The resources deployed using this Terraform configuration should generally incur minimal to no costs, provided they are terminated promptly after creation.

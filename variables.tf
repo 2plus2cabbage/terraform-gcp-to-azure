@@ -34,3 +34,8 @@ variable "shared_secret_azure" {
   description = "Shared secret for GCP-to-Azure IPSEC tunnel"
   sensitive   = true
 }
+
+variable "azure_vpn_ip" {
+  type        = string
+  description = "The public IP of the Azure VPN Gateway"
+}
